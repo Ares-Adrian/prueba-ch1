@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Chompas Navideñas</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navidad-rojo': '#C0392B', // Rojo Profundo
+                        'navidad-verde': '#27AE60', // Verde Pino
+                        'navidad-oro': '#F1C40F',   // Dorado Brillante
+                        'navidad-crema': '#ECF0F1', // Crema Claro
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                        'display': ['Georgia', 'serif'], 
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --navidad-rojo: #c0392b;
+            --navidad-verde: #27ae60;
+            --navidad-oro: #f1c40f;
+            --blanco: #ffffff;
+            --oscuro: #2c3e50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f4f4f4;
+            color: var(--oscuro);
+            overflow-x: hidden;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background-color: var(--navidad-rojo);
+            color: var(--blanco);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            font-family: 'Mountains of Christmas', cursive;
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: logo-animation 2s infinite alternate;
+        }
+
+        @keyframes logo-animation {
+            0% { text-shadow: 0 0 5px var(--blanco); }
+            100% { text-shadow: 0 0 10px var(--blanco), 0 0 15px var(--blanco); }
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+
+        nav a {
+            color: var(--blanco);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        nav a:hover { color: var(--navidad-oro); }
+
+        .header-icons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .cart-icon:hover {
+            transform: scale(1.2);
+            transition: transform 0.2s;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--navidad-oro);
+            color: var(--navidad-rojo);
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* --- HERO BANNER & 3D TREE --- */
+        #hero {
+            position: relative;
+            height: 550px; /* Un poco más alto para que luzca el árbol */
+            background: linear-gradient(to bottom, #1a252f, #2c3e50);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+            overflow: hidden;
+        }
+
+        .hero-text {
+            width: 45%;
+            color: var(--blanco);
+            z-index: 10;
+            padding-right: 20px;
+        }
+
+        .hero-text h1 {
+            font-family: 'Mountains of Christmas', cursive;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: var(--navidad-oro);
+            animation: text-shadow-animation 2s infinite alternate;
+        }
+
+        @keyframes text-shadow-animation {
+            0% { text-shadow: 0 0 10px var(--navidad-oro); }
+            100% { text-shadow: 0 0 20px var(--navidad-oro), 0 0 30px var(--navidad-oro); }
+        }
+
+        .hero-text p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .cta-btn {
+            background-color: var(--navidad-verde);
+            color: var(--blanco);
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            animation: box-shadow-animation 2s infinite alternate;
+        }
+
+        @keyframes box-shadow-animation {
+            0% { box-shadow: 0 0 10px var(--navidad-verde); }
+            100% { box-shadow: 0 0 20px var(--navidad-verde), 0 0 30px var(--navidad-verde); }
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+            background-color: #2ecc71;
+        }
+
+        /* Contenedor para el canvas 3D */
+        #canvas-container {
+            width: 55%;
+            height: 100%;
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            /* Máscara opcional para integrarlo mejor */
+            mask-image: linear-gradient(to left, rgb(0, 0, 0) 80%, rgba(0,0,0,0));
+            -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,1) 80%, rgba(0,0,0,0));
+        }
+        
+        #canvas-container canvas {
+            display: block;
+            outline: none;
+        }
+
+        /* --- CATEGORIES --- */
+        .categories {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 40px 20px;
+            background: white;
+            flex-wrap: wrap;
+        }
+
+        .cat-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--navidad-rojo);
+            background: transparent;
+            color: var(--navidad-rojo);
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .cat-btn.active, .cat-btn:hover {
+            background: var(--navidad-rojo);
+            color: white;
+            box-shadow: 0 0 10px var(--navidad-rojo), 0 0 20px var(--navidad-rojo);
+        }
+
+        /* --- PRODUCT LIST --- */
+        #productos {
+            padding: 20px 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+            font-family: 'Mountains of Christmas', cursive;
+            font-size: 2.5rem;
+            color: var(--navidad-rojo);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15), 0 0 20px var(--navidad-rojo);
+        }
+
+        .card-img {
+            aspect-ratio: 4 / 5;
+            background-color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .card-img i {
+            font-size: 4rem;
+            color: #ddd;
+        }
+
+        .card-info {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .card-price {
+            color: var(--oscuro);
+            font-weight: normal;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        /* New styles for price details */
+        .price-tag {
+            background-color: var(--navidad-rojo);
+            color: white;
+            transform: rotate(3deg);
+            padding: 2px 10px;
+            border-radius: 9999px; 
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .price-tag.extra {
+             background-color: var(--navidad-oro);
+             color: var(--navidad-rojo);
+        }
+        .highlight-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .btn-details {
+            margin-top: auto;
+            width: 100%;
+            padding: 10px;
+            background: var(--navidad-rojo);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-details:hover {
+            background: #a93226;
+        }
+
+        /* --- MODAL --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 900px;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--oscuro);
+            z-index: 10;
+        }
+
+        .modal-left {
+            background: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .modal-right {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-tag {
+            background: var(--navidad-oro);
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            width: fit-content;
+        }
+
+        .sizes-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .size-box {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .size-box:hover, .size-box.selected {
+            background: var(--oscuro);
+            color: white;
+        }
+
+        /* New styles for dynamic size/gender selection */
+        .gender-selection, .sizes-and-quantity-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .modal-category-btn {
+            padding: 8px 15px;
+            border: 1px solid var(--navidad-rojo);
+            background: transparent;
+            color: var(--navidad-rojo);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .modal-category-btn.active, .modal-category-btn:hover {
+            background: var(--navidad-rojo);
+            color: white;
+            box-shadow: 0 2px 8px rgba(192, 57, 43, 0.4);
+        }
+
+        .size-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+
+        .size-option .size-text {
+            font-weight: 600;
+            color: var(--oscuro);
+        }
+
+        .quantity-input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        .add-to-selection-btn {
+            background: var(--navidad-verde);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .add-to-selection-btn:hover {
+            background: #2ecc71;
+        }
+
+        .selected-variations-summary {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .selected-variations-summary h5 {
+            margin-bottom: 10px;
+            color: var(--oscuro);
+        }
+
+        .selected-variations-summary ul {
+            list-style: none;
+.
+            padding: 0;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 5px;
+            background: #fdfdfd;
+        }
+
+        .selected-variations-summary li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px dotted #eee;
+        }
+
+        .selected-variations-summary li:last-child {
+            border-bottom: none;
+        }
+
+        .remove-selection-btn {
+            background: none;
+            border: none;
+            color: var(--navidad-rojo);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: color 0.2s;
+        }
+
+        .remove-selection-btn:hover {
+            color: #e74c3c;
+        }
+
+        /* Adjustments for the main CTA button in modal */
+        .modal-right .cta-btn {
+            margin-top: 20px;
+        }
+
+        .modal-description-full {
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #555;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 5px;
+            border: 1px solid #eee;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            background: linear-gradient(to right, #2c3e50, #c0392b, #27ae60);
+            background-size: 200% 200%;
+            animation: footer-animation 10s ease infinite;
+            color: white;
+            padding: 50px 5%;
+            margin-top: 50px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        @keyframes footer-animation {
+            0%{background-position:0% 50%}
+            50%{background-position:100% 50%}
+            100%{background-position:0% 50%}
+        }
+
+        footer h3 {
+            color: var(--navidad-oro);
+            margin-bottom: 20px;
+            font-family: 'Mountains of Christmas', cursive;
+        }
+
+        footer ul {
+            list-style: none;
+        }
+
+        footer ul li {
+            margin-bottom: 10px;
+        }
+
+        footer ul li a {
+            color: #ddd;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            #hero {
+                flex-direction: column;
+                height: auto;
+                padding: 40px 20px;
+            }
+            #canvas-container {
+                width: 100%;
+                height: 400px;
+                order: -1;
+                margin-bottom: 20px;
+                mask-image: none;
+                -webkit-mask-image: none;
+            }
+            .hero-text {
+                width: 100%;
+                text-align: center;
+                padding-right: 0;
+            }
+            .modal-content {
+                grid-template-columns: 1fr;
+            }
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <i class="fa-solid fa-snowflake fa-spin-pulse"></i>
+            ChompasNavideñas
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#" onclick="filterProducts('todos')">Inicio</a></li>
+                <li><a href="#productos">Productos</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+        </nav>
+        <div class="header-icons">
+             <div class="cart-icon" onclick="openCartModal()">
+                <i class="fas fa-shopping-cart fa-lg"></i>
+                <span class="cart-count" id="cart-count">0</span>
+            </div>
+        </div>
+    </header>
+
+    <section id="hero">
+        <div class="hero-text">
+            <h1>¡Encuentra tu chompa navideña perfecta!</h1>
+            <p>Diseños exclusivos tejidos con amor para esta temporada. Cálidos, divertidos y elegantes. Interactúa con nuestro árbol 3D.</p>
+            <a href="#productos" class="cta-btn">Ver Colección</a>
+        </div>
+        <div id="canvas-container"></div>
+    </section>
+
+    <section class="categories">
+        <button class="cat-btn active" onclick="filterProducts('todos')">Todos</button>
+        <button class="cat-btn" onclick="filterProducts('Unisex')">Unisex</button>
+        <button class="cat-btn" onclick="filterProducts('Niño')">Niños</button>
+    </section>
+
+    <section id="productos">
+        <h2 class="section-title">Nuestra Colección</h2>
+        <div class="products-grid" id="grid">
+        </div>
+    </section>
+
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <div class="modal-left" id="modal-img-container">
+            </div>
+            <div class="modal-right">
+                <span class="modal-tag" id="modal-cat">Categoría</span>
+                <h2 id="modal-title">Nombre del Producto</h2>
+                <h3 id="modal-base-price" style="color: var(--navidad-verde);">$0.00</h3>
+                <p><strong>Material:</strong> <span id="modal-material">Lana</span></p>
+                <div id="modal-desc" class="modal-description-full">Descripción...</div>
+                
+                <h4>Selecciona Género/Categoría:</h4>
+                <div class="gender-selection" id="gender-selection"></div>
+
+                <h4>Selecciona Talla y Cantidad:</h4>
+                <div class="sizes-and-quantity-container" id="sizes-and-quantity-container"></div>
+
+                <div class="selected-variations-summary" id="selected-variations-summary">
+                    <h5>Artículos a añadir:</h5>
+                    <ul id="selected-variations-list"></ul>
+                </div>
+                
+                <button class="cta-btn" onclick="addSelectedToCart()">
+                    <i class="fas fa-shopping-bag"></i> Añadir al Carrito (<span id="current-selection-count">0</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer id="contacto">
+        <div>
+            <h3>Enlaces Rápidos</h3>
+            <ul>
+                <li><a href="#">Política de envíos</a></li>
+                <li><a href="#">Guía de tallas</a></li>
+                <li><a href="#">Devoluciones</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3>Contacto</h3>
+            <ul>
+                <li><i class="fab fa-whatsapp"></i> +51 981 809 980</li>
+                <li><i class="fab fa-whatsapp"></i> +51 980 845 134</li>
+            </ul>
+        </div>
+        <div>
+            <h3>Síguenos</h3>
+            <div style="font-size: 1.5rem; display: flex; gap: 10px;">
+                <i class="fab fa-facebook"></i>
+                <i class="fab fa-instagram"></i>
+                <i class="fab fa-tiktok"></i>
+            </div>
+        </div>
+        <div>
+            <h3>Métodos de Pago</h3>
+            <div style="font-size: 2rem; display: flex; gap: 10px; color: #ddd;">
+                <i class="fab fa-cc-visa"></i>
+                <i class="fab fa-cc-mastercard"></i>
+                <i class="fab fa-cc-paypal"></i>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- DATA GENERATION ---
+        let products = [
+            {
+                id: 1,
+                name: 'Chompa Reno Clásico',
+                category: 'Unisex',
+                material: 'Dralón',
+                image: 'imagenes/1%20Chompa%20Reno%20Clasico.jpeg',
+                description: 'Dama: XS, S, M y L – S/60<br>Varón: S, M y L – S/60<br>Niños: Tallas 2 a 14 – S/55<br>Tallas extra: XL, XXL – S/70'
+            },
+            {
+                id: 2,
+                name: 'Chompa Reno Perla',
+                category: 'Unisex',
+                material: 'Dralón',
+                image: 'imagenes/2 Chompa Reno Perla.jpeg',
+                description: 'Dama: XS, S, M y L – S/60<br>Varón: S, M y L – S/60<br>Niños: Tallas 2 a 14 – S/55<br>Tallas extra: XL, XXL – S/70'
+            },
+            {
+                id: 3,
+                name: 'Chompa Reno Plomo',
+                category: 'Unisex',
+                material: 'Dralón',
+                image: 'imagenes/3 Chompa Reno Plomo.jpeg',
+                description: 'Dama: XS, S, M y L – S/60<br>Varón: S, M y L – S/60<br>Niños: Tallas 2 a 14 – S/55<br>Tallas extra: XL, XXL – S/70'
+            },
+            {
+                id: 4,
+                name: 'Chompa Reno Verde',
+                category: 'Unisex',
+                material: 'Dralón',
+                image: 'imagenes/4 Chompa Reno Verde.jpeg',
+                description: 'Dama: XS, S, M y L – S/60<br>Varón: S, M y L – S/60<br>Niños: Tallas 2 a 14 – S/55<br>Tallas extra: XL, XXL – S/70'
+            },
+            {
+                id: 5,
+                name: 'Chompa Reno Rojo',
+                category: 'Unisex',
+                material: 'Dralón',
+                image: 'imagenes/5 Chompa Reno Rojo.jpeg',
+                description: 'Dama: XS, S, M y L – S/60<br>Varón: S, M y L – S/60<br>Niños: Tallas 2 a 14 – S/55<br>Tallas extra: XL, XXL – S/70'
+            },
+            {
+                id: 6,
+                name: 'Chompa Rodolfo',
+                category: 'Unisex',
+                material: 'Lana Alpino',
+                image: 'imagenes/6 Chompa Rodolfo.jpeg',
+                description: 'Dama: S, M y L – S/60<br>Varón: S, M y L – S/60<br>Niños: Tallas 2 a 14 – S/55<br>Tallas extra: XL, XXL – S/65'
+            },
+            {
+                id: 7,
+                name: 'Chompa Merry Christmas Alpino',
+                category: 'Unisex',
+                material: 'Alpino',
+                image: 'imagenes/7 Chompa Merry Christmas.jpeg',
+                description: 'Niños: Tallas 4 a 14 – S/55<br>Adulto: Tallas S, M y L – S/60'
+            },
+            {
+                id: 8,
+                name: 'Chompa Avíncula',
+                category: 'Unisex',
+                material: 'Alpino',
+                image: 'imagenes/8 Chompa Avincula.jpeg',
+                description: 'Modelo unisex<br>Tallas S, M y L – S/60'
+            },
+            {
+                id: 9,
+                name: 'Chompa Naricita Verde',
+                category: 'Unisex',
+                material: 'Hilo tacto',
+                image: 'imagenes/9 Chompa Naricita Verde.jpeg',
+                description: 'Modelo unisex<br>Niños: Tallas 4, 6 y 8 – S/50<br>Tallas 10, 12 y 14 – S/55<br>Adultos: Tallas S y M – S/60'
+            },
+            {
+                id: 10,
+                name: 'Chompa Spiderman',
+                category: 'Unisex',
+                material: 'Hilo tacto algodón',
+                image: 'imagenes/10 Chompa Spiderman.jpeg',
+                description: 'Niños: Tallas 2, 4, 6 y 8 – S/55<br>Tallas 10, 12 y 14 – S/60<br>Dama: S, M y L – S/70<br>Varón: S, M y L – S/70'
+            },
+            {
+                id: 11,
+                name: 'Chompa Montañez',
+                category: 'Unisex',
+                material: 'Hilo Dralón HB',
+                image: 'imagenes/11 Chompa Montañez.jpeg',
+                description: 'Modelo unisex<br>Adulto: S, M y L – S/60<br>Niños: Tallas 6, 8, 10, 12 y 14 – S/55'
+            },
+            {
+                id: 12,
+                name: 'Modelo Rodolfo Verde',
+                category: 'Unisex',
+                material: 'Dralón hipoalergénico',
+                image: 'imagenes/12 Chompa Rodolfo Verde.jpeg',
+                description: 'Niños: Tallas 2, 4, 6, 8, 10, 12 y 14 – S/55<br>Dama: XS, S, M y L – S/60<br>Varón: S, M y L – S/60<br>Tallas extra: XL, XXL – S/70'
+            },
+            {
+                id: 13,
+                name: 'Grinch Rojo',
+                category: 'Unisex',
+                material: 'Dralón',
+                image: 'imagenes/13 Grinch Rojo.jpeg',
+                description: 'Dama: Talla Estándar (cede hasta M) – S/60<br>Varón: Talla Estándar (cede hasta M) – S/60'
+            },
+            {
+                id: 14,
+                name: 'Chompa Grinch Perla',
+                category: 'Unisex',
+                material: 'Dralón',
+                image: 'imagenes/14 Chompa Grinch Perla.jpeg',
+                description: 'Dama: Talla Estándar (cede hasta L) – S/60<br>Varón: Talla Estándar (cede hasta L) – S/60'
+            },
+            {
+                id: 15,
+                name: 'Chompa Pingüino',
+                category: 'Unisex',
+                material: 'Hilo tacto',
+                image: 'imagenes/15 Chompa Pinguino.jpeg',
+                description: 'Niños: Tallas 4 a 14 – S/55<br>Dama: S, M y L – S/65<br>Varón: S, M y L – S/65'
+            },
+            {
+                id: 16,
+                name: 'Chompa Arbolito',
+                category: 'Unisex',
+                material: 'Dralón',
+                image: 'imagenes/16 Chompa Arbolito.jpeg',
+                description: 'Mujer: Talla Estándar (cede hasta M) – S/60'
+            },
+            {
+                id: 17,
+                name: 'Chompa Merry Christmas',
+                category: 'Unisex',
+                material: 'Dralón',
+                image: 'imagenes/17 Chompa Mery Christmas Blanco.jpeg',
+                description: 'Modelo unisex<br>Adulto: S, M y L – S/60<br>Niños: Tallas 8, 10, 12 y 14 – S/55'
+            },
+            {
+                id: 18,
+                name: 'Chompa Navideña Mickey',
+                category: 'Niño',
+                material: 'Hilo tacto algodón',
+                image: 'imagenes/18 Chompa Mickey.jpeg',
+                description: 'Niños: Tallas 6, 8, 10, 12 y 14 – S/60'
+            },
+            {
+                id: 19,
+                name: 'Chompa Capibara',
+                category: 'Niño',
+                material: 'Hilo tacto algodón',
+                image: 'imagenes/19. Chompa Capibara.jpeg',
+                description: 'Niños: Tallas 6, 8, 10, 12 y 14 – S/60'
+            },
+            {
+                id: 20,
+                name: 'Chompa Reno',
+                category: 'Unisex',
+                material: 'Hilo Dralón HB',
+                image: 'imagenes/20 Chompa Reno.jpeg',
+                description: 'Modelo unisex<br>Colores: Rojo, negro y verde<br>Adulto: Tallas S, M y L – S/60<br>Niños: Tallas 6, 8, 10, 12 y 14 – S/55'
+            }
+        ];
+
+        // Function to parse the product description into structured variations
+        function parseProductDescription(description) {
+            const variations = {};
+            const lines = description.split('<br>');
+
+            const sizeMap = {
+                'XS': ['XS'], 'S': ['S'], 'M': ['M'], 'L': ['L'], 'XL': ['XL'], 'XXL': ['XXL'],
+                '2': ['2'], '4': ['4'], '6': ['6'], '8': ['8'], '10': ['10'], '12': ['12'], '14': ['14'],
+                'Tallas 2 a 14': ['2', '4', '6', '8', '10', '12', '14'],
+                'Tallas 4 a 14': ['4', '6', '8', '10', '12', '14'],
+                'Tallas 6 a 14': ['6', '8', '10', '12', '14'],
+                'Tallas 8 a 14': ['8', '10', '12', '14'],
+                'Tallas 10 a 14': ['10', '12', '14'],
+                'Tallas 4, 6 y 8': ['4', '6', '8'],
+                'Tallas 10, 12 y 14': ['10', '12', '14'],
+                'Tallas 2, 4, 6 y 8': ['2', '4', '6', '8'],
+                'Tallas S y M': ['S', 'M'],
+                'Adulto': ['S', 'M', 'L'], // Default for generic "Adulto"
+                'Talla estándar (cede hasta M)': ['S', 'M'],
+                'Talla estándar (cede hasta L)': ['S', 'M', 'L'],
+                'Modelo unisex': ['S', 'M', 'L'], // Default for generic "Modelo unisex"
+                'Precio': [] // For single price entries without explicit sizes
+            };
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+
+                // Regex to capture Category, Sizes, and Price
+                // Examples:
+                // "Dama: XS, S, M y L – S/60"
+                // "Niños: Tallas 2 a 14 – S/55"
+                // "Modelo unisex<br>Tallas 4 a 14 – S/55<br>Tallas S, M y L – S/60"
+                // "Talla estándar (cede hasta M)<br>Precio: S/60"
+                const regex = /(Dama|Varón|Niños|Adulto|Tallas extra|Modelo unisex|Talla estándar \(cede hasta [LM]\)|Tallas \d+ a \d+|Tallas \d+, \d+ y \d+|Tallas \d+, \d+, \d+ y \d+|Tallas [A-Z], [A-Z] y [A-Z]|Tallas [A-Z] y [A-Z]|Precio):\s*(.*?)\s*–\s*S\/(\d+)/i;
+                const match = line.match(regex);
+
+                if (match) {
+                    let category = match[1].trim();
+                    let sizeStr = match[2].trim();
+                    let price = match[3];
+
+                    let sizes = [];
+                    if (sizeMap[sizeStr]) {
+                        sizes = sizeMap[sizeStr];
+                    } else if (sizeStr.includes('y') || sizeStr.includes(',')) {
+                        sizes = sizeStr.replace(/Tallas/gi, '').replace(' y ', ',').split(',').map(s => s.trim()).filter(Boolean);
+                    } else if (category === 'Precio' || category.includes('Talla estándar')) { // Special handling for single price or standard size
+                        sizes = ['Única']; // Represent as 'Unique' size
+                        if (category.includes('Talla estándar')) {
+                            category = 'Unisex'; // Map standard talla to Unisex
+                        } else if (category === 'Precio') {
+                            category = 'Unisex'; // Map general price to Unisex
+                        }
+                    } else { // Direct size like "S" or "XL"
+                        sizes = [sizeStr];
+                    }
+                    
+                    // Map common categories to a more unified set if needed
+                    if (category.includes('Talla estándar') || category.includes('Modelo unisex') || category === 'Adulto') {
+                        category = 'Unisex';
+                    } else if (category === 'Tallas extra') {
+                        category = 'Extra';
+                    }
+
+                    if (!variations[category]) {
+                        variations[category] = [];
+                    }
+                    variations[category].push({ sizes: sizes, price: price });
+
+                } else {
+                    // Handle cases like "Modelo unisex" without explicit sizes and price on the same line
+                    // or lines like "Para los pequeños de la casa" which are just descriptive
+                    if (line.includes('Modelo unisex') && !variations['Unisex']) {
+                        // If no specific sizes/prices follow, assume default adult unisex sizes
+                        variations['Unisex'] = [{ sizes: ['S', 'M', 'L'], price: '' }]; // Price will be updated from the card's price
+                    } else if (line.includes('Precio:') && !match) { // "Precio: S/60"
+                        const priceMatch = line.match(/Precio:\s*S\/(\d+)/i);
+                        if (priceMatch) {
+                            if (!variations['Unisex']) variations['Unisex'] = [];
+                            variations['Unisex'].push({ sizes: ['Única'], price: priceMatch[1] });
+                        }
+                    }
+                }
+            });
+
+            // Clean up variations where price might be missing and use product's default price
+            for (const cat in variations) {
+                variations[cat].forEach(variation => {
+                    if (!variation.price || variation.price === '') {
+                        // This case is actually handled by the outer loop, but as a fallback
+                        // it's good to know this could be an issue. For now, we rely on regex.
+                    }
+                });
+            }
+            
+            return variations;
+        }
+
+        // Process products to add the 'variations' field and initial 'price'
+        products.forEach(product => {
+            product.variations = parseProductDescription(product.description);
+            // Set a default price if not explicitly set or if it's dynamic
+            if (!product.price || product.price === '0') {
+                // Try to derive a default price from variations, e.g., the first one found
+                for (const category in product.variations) {
+                    if (product.variations[category].length > 0 && product.variations[category][0].price) {
+                        product.price = product.variations[category][0].price;
+                        break;
+                    }
+                }
+            }
+        });
+
+        function generatePriceDetailsHTML(description) {
+            const lines = description.split('<br>').map(l => l.trim()).filter(l => l);
+            let html = '<div class="space-y-2 mt-2">';
+
+            const categoryStyles = {
+                'Dama': 'border-navidad-rojo text-navidad-rojo',
+                'Mujer': 'border-navidad-rojo text-navidad-rojo',
+                'Varón': 'border-navidad-verde text-navidad-verde',
+                'Niños': 'border-navidad-rojo text-navidad-rojo',
+                'Niños/as': 'border-navidad-rojo text-navidad-rojo',
+                'Tallas extra': 'border-navidad-oro text-navidad-oro',
+                'Modelo unisex': 'border-gray-400 text-gray-500',
+                'Talla estándar': 'border-gray-400 text-gray-500',
+                'Adulto': 'border-navidad-verde text-navidad-verde',
+                'Adultos': 'border-navidad-verde text-navidad-verde',
+                'Precio': 'border-gray-400 text-gray-500',
+                'default': 'border-gray-400 text-gray-500'
+            };
+
+            let currentCategory = 'default';
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+
+                if (line.toLowerCase() === 'modelo unisex') {
+                    currentCategory = 'Modelo unisex';
+                    continue;
+                }
+                
+                // Regexes
+                const fullRegex = /^(.*?):\s*(.*?)\s*–\s*(S\/\d+)/i;
+                const partialRegex = /^(Tallas.*?)\s*–\s*(S\/\d+)/i;
+                const catPriceRegex = /^([a-zA-Z\s/ñáéíóúü()]+?):\s*(S\/\d+)/i;
+                
+                let match;
+                let category, sizes = '', price;
+                
+                match = line.match(fullRegex);
+                if (match) {
+                    category = match[1].trim();
+                    sizes = match[2].trim();
+                    price = match[3].trim();
+                    currentCategory = category;
+                } else {
+                    match = line.match(partialRegex);
+                    if (match) {
+                        sizes = match[1].trim();
+                        price = match[2].trim();
+                        category = (currentCategory === 'Modelo unisex') 
+                            ? (/\d/.test(sizes) && !/[SMLX]/i.test(sizes) ? 'Niños' : 'Adultos') 
+                            : currentCategory;
+                    } else {
+                        match = line.match(catPriceRegex);
+                        if (match) {
+                            category = match[1].trim();
+                            price = match[2].trim();
+                            sizes = 'Talla única';
+                            if (category.toLowerCase().includes('talla estándar')) {
+                                sizes = category.replace(/talla estándar/i, '').trim();
+                                category = 'Talla Estándar';
+                            }
+                        } else {
+                            if (!line.includes('–') && !line.includes('S/')) {
+                                html += `<div class="text-xs text-gray-600 p-1">${line}</div>`;
+                            }
+                            continue;
+                        }
+                    }
+                }
+
+                let styleKey = 'default';
+                for (const key in categoryStyles) {
+                    if (category.toLowerCase().includes(key.toLowerCase())) {
+                        styleKey = key;
+                        break;
+                    }
+                }
+                
+                let displayCategory = category.replace(/niños/i, 'Niño').replace(/adulto/i, 'Adulto').replace(/varón/i, 'Varón').replace(/precio/i, 'General');
+
+                const style = categoryStyles[styleKey] || categoryStyles['default'];
+                const isExtra = styleKey === 'Tallas extra';
+
+                html += `
+                    <div class="flex justify-between items-center bg-navidad-crema/70 p-2 rounded-lg border-l-4 ${style}">
+                        <div>
+                            <span class="highlight-text ${style}">${displayCategory}</span>
+                            ${sizes ? `<p class="text-xs text-gray-600 mt-1">Tallas: ${sizes}</p>` : ''}
+                        </div>
+                        <div class="price-tag ${isExtra ? 'extra' : ''}">
+                            ${price}
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        // --- RENDER PRODUCTS ---
+        const grid = document.getElementById('grid');
+
+        function renderProducts(filter = 'todos') {
+            grid.innerHTML = '';
+            
+            const filtered = filter === 'todos' 
+                ? products 
+                : products.filter(p => p.category === filter);
+
+            filtered.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                let imageStyle = "width: 100%; height: 100%; object-fit: cover;";
+                const productsToLower = ["Chompa Reno Clásico", "Chompa Reno Perla", "Chompa Reno Plomo", "Chompa Reno Verde", "Chompa Reno Rojo", "Chompa Rodolfo", "Chompa Merry Christmas", "Chompa Spiderman", "Grinch Rojo", "Chompa Grinch Perla", "Chompa Pingüino", "Chompa Arbolito", "Chompa Navideña Mickey", "Chompa Navideña Mickey"];
+                if (productsToLower.includes(p.name)) {
+                    imageStyle += " object-position: top;";
+                }
+                
+                let priceDetailsHTML = generatePriceDetailsHTML(p.description);
+
+                card.innerHTML = `
+                    <div class="card-img">
+                        <img src="${p.image}" alt="${p.name}" style="${imageStyle}">
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">${p.name}</div>
+                        <div class="card-price">${priceDetailsHTML}</div>
+                        <button class="btn-details" onclick="openModal(${p.id})">Ver Detalles</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            // Update active button
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                const btnText = btn.innerText.toLowerCase();
+                const currentFilter = filter.toLowerCase();
+                
+                // Special handling for 'niños' and 'niño'
+                if ( (btnText === 'niños' || btnText === 'niño') && (currentFilter === 'niños' || currentFilter === 'niño') ) {
+                    btn.classList.add('active');
+                } else if (btnText === currentFilter) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // --- FILTER FUNCTION ---
+        function filterProducts(cat) {
+            renderProducts(cat);
+        }
+
+        // --- MODAL LOGIC ---
+        const modal = document.getElementById('productModal');
+
+        function openModal(id) {
+            const product = products.find(p => p.id === id);
+            if(!product) return;
+
+            document.getElementById('modal-title').innerText = product.name;
+            document.getElementById('modal-price').innerText = `S/ ${product.price}`;
+            document.getElementById('modal-cat').innerText = product.category;
+            document.getElementById('modal-material').innerText = product.material;
+            document.getElementById('modal-desc').innerHTML = product.description;
+            
+            const imgContainer = document.getElementById('modal-img-container');
+            imgContainer.innerHTML = `<img src="${product.image}" alt="${product.name}" style="width: 100%; max-height: 400px; object-fit: contain;">`;
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        let cartItems = []; // Stores selected items for the cart
+        let selectedVariations = []; // Temporarily stores selections within the modal for the current product
+
+        function openModal(id) {
+            const product = products.find(p => p.id === id);
+            if(!product) return;
+
+            // Store the current product being viewed in the modal
+            modal.dataset.productId = product.id;
+
+            document.getElementById('modal-title').innerText = product.name;
+            document.getElementById('modal-base-price').innerText = `S/ ${product.price}`;
+            document.getElementById('modal-cat').innerText = product.category;
+            document.getElementById('modal-material').innerText = product.material;
+            // Display the original description for additional details
+            document.getElementById('modal-desc').innerHTML = product.description;
+            
+            const imgContainer = document.getElementById('modal-img-container');
+            imgContainer.innerHTML = `<img src="${product.image}" alt="${product.name}" style="width: 100%; max-height: 400px; object-fit: contain;">`;
+
+            // Clear previous selections
+            selectedVariations = [];
+            updateSelectedVariationsSummary();
+
+            // Render category (gender/group) buttons
+            renderCategoryButtons(product);
+
+            // Clear size and quantity container
+            document.getElementById('sizes-and-quantity-container').innerHTML = '';
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        function renderCategoryButtons(product) {
+            const genderSelectionDiv = document.getElementById('gender-selection');
+            genderSelectionDiv.innerHTML = ''; // Clear previous buttons
+
+            const categories = Object.keys(product.variations);
+            categories.forEach(category => {
+                const button = document.createElement('button');
+                button.classList.add('cat-btn'); // Reuse category button style
+                button.classList.add('modal-category-btn');
+                button.innerText = category;
+                button.onclick = () => {
+                    // Remove 'active' from all category buttons
+                    document.querySelectorAll('.modal-category-btn').forEach(btn => btn.classList.remove('active'));
+                    // Add 'active' to the clicked button
+                    button.classList.add('active');
+                    renderSizesForCategory(product, category);
+                };
+                genderSelectionDiv.appendChild(button);
+            });
+
+            // Automatically click the first category to show its sizes
+            if (categories.length > 0) {
+                genderSelectionDiv.querySelector('.modal-category-btn').click();
+            }
+        }
+
+        function renderSizesForCategory(product, category) {
+            const sizesContainer = document.getElementById('sizes-and-quantity-container');
+            sizesContainer.innerHTML = ''; // Clear previous sizes
+
+            const variationsForCategory = product.variations[category];
+
+            variationsForCategory.forEach(variation => {
+                const price = variation.price;
+                variation.sizes.forEach(size => {
+                    const sizeOptionDiv = document.createElement('div');
+                    sizeOptionDiv.classList.add('size-option');
+                    sizeOptionDiv.innerHTML = `
+                        <span class="size-text">${category}: ${size} (S/ ${price})</span>
+                        <input type="number" min="0" value="0" class="quantity-input" data-category="${category}" data-size="${size}" data-price="${price}">
+                        <button class="add-to-selection-btn">Seleccionar</button>
+                    `;
+                    sizesContainer.appendChild(sizeOptionDiv);
+
+                    // Add event listener to the "Seleccionar" button
+                    const selectButton = sizeOptionDiv.querySelector('.add-to-selection-btn');
+                    selectButton.onclick = () => {
+                        const quantityInput = sizeOptionDiv.querySelector('.quantity-input');
+                        const quantity = parseInt(quantityInput.value);
+
+                        if (quantity > 0) {
+                            const selectedItem = {
+                                productId: product.id,
+                                productName: product.name,
+                                category: category,
+                                size: size,
+                                price: price,
+                                quantity: quantity
+                            };
+                            selectedVariations.push(selectedItem);
+                            updateSelectedVariationsSummary();
+                            quantityInput.value = 1; // Reset quantity after selection
+                        } else {
+                            alert('La cantidad debe ser al menos 1.');
+                        }
+                    };
+                });
+            });
+        }
+
+        function updateSelectedVariationsSummary() {
+            const list = document.getElementById('selected-variations-list');
+            list.innerHTML = '';
+            let totalCount = 0;
+
+            selectedVariations.forEach((item, index) => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    ${item.productName} - ${item.category} (${item.size}) x ${item.quantity} (S/${item.price * item.quantity})
+                    <button class="remove-selection-btn" data-index="${index}"><i class="fas fa-trash"></i></button>
+                `;
+                list.appendChild(listItem);
+                totalCount += item.quantity;
+            });
+
+            document.getElementById('current-selection-count').innerText = totalCount;
+
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-selection-btn').forEach(button => {
+                button.onclick = (event) => {
+                    const indexToRemove = parseInt(event.currentTarget.dataset.index);
+                    selectedVariations.splice(indexToRemove, 1);
+                    updateSelectedVariationsSummary();
+                };
+            });
+        }
+
+        // --- CART LOGIC ---
+        let cartCount = 0; // Total items in cart
+
+        function addSelectedToCart() {
+            if (selectedVariations.length === 0) {
+                alert('Por favor, selecciona al menos una variación para añadir al carrito.');
+                return;
+            }
+
+            selectedVariations.forEach(item => {
+                cartItems.push(item);
+                cartCount += item.quantity;
+            });
+
+            document.getElementById('cart-count').innerText = cartCount;
+            closeModal();
+            alert(`¡${selectedVariations.length} artículos añadidos al carrito!`);
+            selectedVariations = []; // Clear selections after adding to cart
+            updateSelectedVariationsSummary();
+        }
+
+        // Initialize Products
+        renderProducts();
+    </script>
+
+    <script>
+        (function() {
+            const container = document.getElementById('canvas-container');
+            let scene, camera, renderer, controls;
+            let snowSystem, snowGeo, treeGroup;
+
+            const COLORS = {
+                TRUNK: 0x5C4033,
+                LEAVES_DARK: 0x228B22,
+                LEAVES_LIGHT: 0x32CD32,
+                SNOW: 0xFFFFFF,
+                STAR: 0xFFD700,
+                ORNAMENTS: [0xFF0000, 0x0000FF, 0xFFD700, 0xC0C0C0]
+            };
+
+            const VOXEL_SIZE = 1;
+
+            function init3D() {
+                // Obtener dimensiones del contenedor, no de la ventana
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+
+                scene = new THREE.Scene();
+
+                camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+                camera.position.set(30, 30, 50);
+
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(width, height);
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                
+                // IMPORTANTE: Adjuntar al contenedor, no al body
+                container.appendChild(renderer.domElement);
+
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.maxPolarAngle = Math.PI / 2 - 0.1;
+                controls.enableZoom = false; // Deshabilitamos zoom scroll para no afectar la navegación web
+
+                // Iluminación
+                const ambientLight = new THREE.AmbientLight(0xcccccc, 0.8);
+                scene.add(ambientLight);
+
+                const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+                dirLight.position.set(50, 80, 30);
+                dirLight.castShadow = true;
+                scene.add(dirLight);
+
+                createEnvironment();
+
+                treeGroup = new THREE.Group();
+                buildVoxelTree(treeGroup);
+                treeGroup.scale.set(1.3, 1.3, 1.3); // Aumentar tamaño del árbol en 0.5
+                treeGroup.position.y = -10; // Centrar el árbol verticalmente
+                scene.add(treeGroup);
+
+                window.addEventListener('resize', onWindowResize);
+                animate();
+            }
+
+            const boxGeometry = new THREE.BoxGeometry(VOXEL_SIZE, VOXEL_SIZE, VOXEL_SIZE);
+            function createVoxel(x, y, z, colorMat, parentGroup, castShadow = true) {
+                const mesh = new THREE.Mesh(boxGeometry, colorMat);
+                mesh.position.set(x * VOXEL_SIZE, y * VOXEL_SIZE, z * VOXEL_SIZE);
+                mesh.castShadow = castShadow;
+                mesh.receiveShadow = true;
+                parentGroup.add(mesh);
+            }
+
+            function buildVoxelTree(group) {
+                const trunkMat = new THREE.MeshLambertMaterial({ color: COLORS.TRUNK });
+                const leafMatDark = new THREE.MeshLambertMaterial({ color: COLORS.LEAVES_DARK });
+                const leafMatLight = new THREE.MeshLambertMaterial({ color: COLORS.LEAVES_LIGHT });
+                const starMat = new THREE.MeshPhongMaterial({ color: COLORS.STAR, emissive: 0x554400 });
+                const ornamentMats = COLORS.ORNAMENTS.map(c => new THREE.MeshPhongMaterial({ color: c, shininess: 100 }));
+
+                // Tronco
+                const trunkHeight = 6;
+                const trunkRadius = 2;
+                for (let y = 0; y < trunkHeight; y++) {
+                    for (let x = -trunkRadius / 2; x < trunkRadius / 2; x++) {
+                        for (let z = -trunkRadius / 2; z < trunkRadius / 2; z++) {
+                             createVoxel(x + 0.5, y + 0.5, z + 0.5, trunkMat, group);
+                        }
+                    }
+                }
+
+                // Hojas
+                let currentY = trunkHeight;
+                const layers = [
+                    { r: 7, h: 3 }, { r: 6, h: 3 }, { r: 5, h: 3 },
+                    { r: 4, h: 2 }, { r: 3, h: 2 }, { r: 2, h: 2 }
+                ];
+
+                layers.forEach(layer => {
+                    for (let yOffset = 0; yOffset < layer.h; yOffset++) {
+                        let currentRadius = layer.r - (yOffset * 0.5);
+                        for (let x = -currentRadius; x <= currentRadius; x++) {
+                            for (let z = -currentRadius; z <= currentRadius; z++) {
+                                const dist = Math.sqrt(x*x + z*z);
+                                if (dist <= currentRadius && Math.random() > 0.05) {
+                                    let material = Math.random() > 0.5 ? leafMatDark : leafMatLight;
+                                    if (dist > currentRadius - 1.5 && Math.random() > 0.85) {
+                                        material = ornamentMats[Math.floor(Math.random() * ornamentMats.length)];
+                                    }
+                                    createVoxel(x, currentY + yOffset, z, material, group);
+                                }
+                            }
+                        }
+                    }
+                    currentY += layer.h - 0.5;
+                });
+
+                // Estrella
+                const starBaseY = currentY;
+                createVoxel(0, starBaseY, 0, starMat, group);
+                createVoxel(0, starBaseY + 1, 0, starMat, group);
+                createVoxel(1, starBaseY, 0, starMat, group);
+                createVoxel(-1, starBaseY, 0, starMat, group);
+                createVoxel(0, starBaseY, 1, starMat, group);
+                createVoxel(0, starBaseY, -1, starMat, group);
+            }
+
+            function createEnvironment() {
+                /* const planeGeo = new THREE.PlaneGeometry(200, 200);
+                const planeMat = new THREE.MeshLambertMaterial({ color: COLORS.SNOW });
+                const plane = new THREE.Mesh(planeGeo, planeMat);
+                plane.rotation.x = -Math.PI / 2;
+                plane.receiveShadow = true;
+                scene.add(plane); */
+
+                snowGeo = new THREE.BufferGeometry();
+                const snowVertices = [];
+                for (let i = 0; i < 3000; i++) {
+                    snowVertices.push(
+                        Math.random() * 200 - 100,
+                        Math.random() * 100 + 50,
+                        Math.random() * 200 - 100
+                    );
+                }
+                snowGeo.setAttribute('position', new THREE.Float32BufferAttribute(snowVertices, 3));
+                const snowMat = new THREE.PointsMaterial({
+                    color: 0xffffff,
+                    size: 1.0,
+                    transparent: true,
+                    opacity: 1.0
+                });
+                snowSystem = new THREE.Points(snowGeo, snowMat);
+                scene.add(snowSystem);
+            }
+
+            function animateSnow() {
+                const positions = snowGeo.attributes.position.array;
+                for (let i = 1; i < positions.length; i += 3) {
+                    positions[i] -= 0.2;
+                    if (positions[i] < 0) {
+                        positions[i] = 100;
+                    }
+                }
+                snowGeo.attributes.position.needsUpdate = true;
+                snowSystem.rotation.y += 0.001;
+            }
+
+            function onWindowResize() {
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                animateSnow();
+
+                if (treeGroup) {
+                    treeGroup.rotation.y += 0.005; // Girar lentamente a la derecha
+                }
+
+                renderer.render(scene, camera);
+            }
+
+            // Iniciar solo si existe el contenedor
+            if(container) init3D();
+        })();
+    </script>
+</body>
+</html>
